@@ -1,117 +1,87 @@
+/*----------------------------------------------------------------------------*/
+/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
+/* Open Source Software - may be modified and shared by FRC teams. The code   */
+/* must be accompanied by the FIRST BSD license file in the root directory of */
+/* the project.                                                               */
+/*----------------------------------------------------------------------------*/
+
 package org.usfirst.frc.team3641.robot;
 
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
-import simulation.IterativeRobot;
-import simulation.HardwareTimer;
-//import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import hardware.Pro775DriveBase;
-import pathfinder.Point;
-import pathfinder.Waypoint;
 /**
  * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the IterativeRobot
+ * functions corresponding to each mode, as described in the TimedRobot
  * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
+ * creating this project, you must also update the build.properties file in the
+ * project.
  */
-public class Robot extends IterativeRobot {
-	final String defaultAuto = "Default";
-	final String customAuto = "My Auto";
-	String autoSelected;
-	//SendableChooser<String> chooser = new SendableChooser<>();
+public class Robot extends TimedRobot {
 
-	Pro775DriveBase driveBase;
-	
-	HardwareTimer timer;
-	double lastTime;
-	double deltaTime = 0;;
-	
-	//PS4 ps4 = new PS4(0);
-	
+	Command m_autonomousCommand;
+	SendableChooser<Command> m_chooser = new SendableChooser<>();
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	@Override
 	public void robotInit() {
-		//chooser.addDefault("Default Auto", defaultAuto);
-		//chooser.addObject("My Auto", customAuto);
-		//SmartDashboard.putData("Auto choices", chooser);
-		driveBase = new Pro775DriveBase();
-		timer = new HardwareTimer();
-		lastTime = timer.getFPGATimestamp();
 	}
 
 	/**
-	 * This autonomous (along with the chooser code above) shows how to select
-	 * between different autonomous modes using the dashboard. The sendable
-	 * chooser code works with the Java SmartDashboard. If you prefer the
-	 * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-	 * getString line to get the auto name from the text box below the Gyro
-	 *
-	 * You can add additional auto modes by adding additional comparisons to the
-	 * switch structure below with additional strings. If using the
-	 * SendableChooser make sure to add them to the chooser code above as well.
+	 * This function is called once each time the robot enters Disabled mode.
+	 * You can use it to reset any subsystem information you want to clear when
+	 * the robot is disabled.
 	 */
 	@Override
+	public void disabledInit() {
+
+	}
+
+	@Override
+	public void disabledPeriodic() {
+	}
+	
+	@Override
 	public void autonomousInit() {
-		//autoSelected = chooser.getSelected();
-		// autoSelected = SmartDashboard.getString("Auto Selector",
-		// defaultAuto);
-		System.out.println("Auto selected: " + autoSelected);
+		
 	}
 
 	/**
-	 * This function is called periodically during autonomous
+	 * This function is called periodically during autonomous.
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		standardPeriodic();
-		switch (autoSelected) {
-		default:
-			// Put default auto code here
-			break;
+		Scheduler.getInstance().run();
+	}
+
+	@Override
+	public void teleopInit() {
+		// This makes sure that the autonomous stops running when
+		// teleop starts running. If you want the autonomous to
+		// continue until interrupted by another command, remove
+		// this line or comment it out.
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.cancel();
 		}
 	}
 
-	
-	@Override
-	public void teleopInit() {
-		Waypoint start = new Waypoint(new Point(0,0), 0);
-		Waypoint end = new Waypoint(new Point(10,0), 0);
-		driveBase.driveFromTo(start,end);
-	}
 	/**
-	 * This function is called periodically during operator control
+	 * This function is called periodically during operator control.
 	 */
 	@Override
 	public void teleopPeriodic() {
-		standardPeriodic();
-		//driveBase.drive(ps4.getAxis(PS4.Axis.LEFT_Y), ps4.getAxis(PS4.Axis.RIGHT_Y));
+		Scheduler.getInstance().run();
 	}
 
 	/**
-	 * This function is called periodically during test mode
+	 * This function is called periodically during test mode.
 	 */
 	@Override
 	public void testPeriodic() {
-	}
-
-	/**
-	 * This method is always called periodically
-	 */
-	public void standardPeriodic() {
-		double currentTime = timer.getFPGATimestamp();
-		deltaTime = currentTime - lastTime;
-		lastTime = currentTime;
-		driveBase.update(deltaTime);
-	}
-	
-	/**
-	 * This method is always called to initialize
-	 */
-	public void standardInit() {
-		lastTime = timer.getFPGATimestamp();
 	}
 }

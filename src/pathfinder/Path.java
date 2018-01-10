@@ -2,46 +2,87 @@ package pathfinder;
 
 import java.util.ArrayList;
 
+import utilities.Logging;
+
 public class Path {
 	static final double maxVel = 4.0;
+	static final double maxAccel = 5.0;
 	static final int defaultPoints = 200;
+	static final VelocityMode defaultMode = VelocityMode.TRIANGULAR;
 	
 	//a path consists of a list of waypoints.
 	public ArrayList<Waypoint> waypoints;
 	
+	public double endTime;
+	public double endPos;
+	
+	//the different modes of generating profiles
+	public enum VelocityMode{
+		TRIANGULAR,
+		CONSTANT
+	}
+	
 	public Path(Waypoint start, Waypoint end){
-		this(start, end, defaultPoints, maxVel);
+		this(start, end, defaultPoints, maxVel, maxAccel, defaultMode);
 	}
 	
 	//create a path from two waypoints
-	public Path(Waypoint start, Waypoint end, int numberOfPoints, double velocity) {
+	public Path(Waypoint start, Waypoint end, int numberOfPoints, double velocity, double accel,
+			VelocityMode mode) {
 		waypoints = new ArrayList<Waypoint>();
-		genBezierPath(start, end, numberOfPoints, 0.5);
-		setSpeeds(velocity);
-		setTimes();
-		alignWaypoints();
+		genBezierPath(start, end, numberOfPoints, 0.2);
+		endPos = getPositions();
+		getTimes(velocity, accel, mode);
 	}
 	
-	//sets the speeds of the points on the path
-	void setSpeeds(double velocity){
-		for(int i = 0; i < waypoints.size(); i++){
-			//wow big equation makes an S-curve maybe but its really really really bad
-			waypoints.get(i).velocity = 
-				(-0.5 * Math.cos(((double) (i + 1) / (double)waypoints.size()) * 2.0 * Math.PI) + 0.5) * velocity * 7.50 + 0.1;
+	//calculate the distances of each point, return end position
+	private double getPositions() {
+		//stores the total distance
+		double distanceAccumulator = 0;
+		//get the position of the first point, and set its distance to 0
+		Point lastPoint = waypoints.get(0).position;
+		waypoints.get(0).time = 0;
+		//loop through all other points
+		for(int i = 1; i < waypoints.size(); i++) {
+			Point wpPosition = waypoints.get(i).position;
+			double dist = lastPoint.distance(wpPosition);
+			lastPoint = wpPosition;
+			distanceAccumulator += dist;
+			waypoints.get(i).distance = distanceAccumulator;
+		}
+		return distanceAccumulator;
+	}
+	
+	//set the times for every waypoint based on distance
+	private void getTimes(double vel, double accel, VelocityMode mode) {
+		switch(mode) {
+		case TRIANGULAR:
+			endTime = Math.sqrt(2 * endPos / accel);
+			break;
+		case CONSTANT:
+			endTime = endPos / vel;
+			break;
+		}
+		for(Waypoint w : waypoints) {
+			w.time = getTime(vel, accel, w.distance, mode);
 		}
 	}
 	
-	//set the times of the waypoints
-	void setTimes(){
-		//set the first time to 0
-		waypoints.get(0).time = 0;
-		//get the first position
-		Waypoint lastPoint = waypoints.get(0);
-		for(int i = 1; i < waypoints.size(); i++){
-			double distance = waypoints.get(i).position.distance(lastPoint.position);
-			double avgVel = lastPoint.velocity;
-			waypoints.get(i).time = distance / avgVel + lastPoint.time;
-			lastPoint = waypoints.get(i);
+	//get the time for an individual waypoint based on distance
+	private double getTime(double vel, double accel, double distance, VelocityMode mode) {
+		switch(mode) {
+		case TRIANGULAR:
+			if(distance <= endPos / 2.0) {
+				return Math.sqrt(2 * distance / accel);
+			}else {
+				//wow this is all terrible I have to redo it.
+				return (-accel * endTime + Math.sqrt(Math.pow((accel * endTime), 2) - 4.0 * (-accel / 2.0) * (-distance + (accel * Math.pow(endTime, 2) /2)))) / -accel;
+			}
+		case CONSTANT:
+			return distance / maxVel;
+		default:
+			Logging.e("Couldn't find velocity profile mode.");
+			return 0;
 		}
 	}
 	

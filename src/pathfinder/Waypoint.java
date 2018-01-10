@@ -2,8 +2,8 @@ package pathfinder;
 
 public class Waypoint {
 	public Point position;
+	public double distance;
 	public double rotation;
-	public double velocity;
 	public double time;
 	public Waypoint(Point waypointPosition, double wpRotation) {
 		position = waypointPosition;
@@ -48,6 +48,6 @@ public class Waypoint {
 	
 	@Override
 	public String toString(){
-		return "X: " + position.x + ", Y: " + position.y + ", Angle: " + rotation + ", velocity: " + velocity + ", time: " + time;
+		return "X: " + position.x + ", Y: " + position.y + ", Angle: " + rotation + ", distance: " + distance + ", time: " + time;
 	}
 }

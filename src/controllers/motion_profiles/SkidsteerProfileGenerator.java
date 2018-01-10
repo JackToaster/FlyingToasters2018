@@ -4,7 +4,6 @@ import pathfinder.*;
 public class SkidsteerProfileGenerator extends WheelProfileGenerator {
 	//how far to the right the wheel is, negative for left
 	private double rightOffset;
-	
 	//constructor
 	public SkidsteerProfileGenerator(double rightOffset){
 		this.rightOffset = rightOffset;
@@ -15,7 +14,7 @@ public class SkidsteerProfileGenerator extends WheelProfileGenerator {
 		Profile outProfile = new Profile(p.waypoints.size());
 		Waypoint firstWP = p.waypoints.get(0);
 		Point firstPoint = getOffsetPoint(firstWP);
-		MPPoint startMPPoint = new MPPoint(firstWP.velocity,offset,0);
+		MPPoint startMPPoint = new MPPoint(0,offset,0);
 
 		outProfile.setPoint(0,startMPPoint);
 
@@ -40,6 +39,7 @@ public class SkidsteerProfileGenerator extends WheelProfileGenerator {
 			
 			lastOffsetPoint = offsetPoint;
 		}
+		outProfile.getPoint(0).velocity = outProfile.getPoint(1).velocity;
 		//return it!
 		return outProfile;
 	}

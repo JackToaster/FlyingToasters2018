@@ -6,17 +6,16 @@ import controllers.motion_profiles.SkidsteerProfileGenerator;
 import controllers.motion_profiles.WheelProfileGenerator;
 import pathfinder.Path;
 import pathfinder.Waypoint;
-import simulation.CANTalon;
 import utilities.Logging;
 
 public class Pro775DriveBase extends DriveBase{
 	final static int currentLimit = 25;
 
-	final static double velGain = 0.05;
-	final static double accelGain = 0.001;
+	final static double velGain = -1;
+	final static double accelGain = 0;
 	
-	private PIDcontroller leftMotionProfilePID = new PIDcontroller(1,0,0);
-	private PIDcontroller rightMotionProfilePID = new PIDcontroller(1,0,0);
+	private PIDcontroller leftMotionProfilePID = new PIDcontroller(0,0,0);
+	private PIDcontroller rightMotionProfilePID = new PIDcontroller(0,0,0);
 	
 	private FeedbackLinkedTalons left;
 	private FeedbackLinkedTalons right;
@@ -45,8 +44,8 @@ public class Pro775DriveBase extends DriveBase{
 	public Pro775DriveBase() {
 		super();
 		//create the linked talons for each side of the drive base
-		left = new FeedbackLinkedTalons(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute, Talon.LEFT0.id, Talon.LEFT1.id, Talon.LEFT2.id, Talon.LEFT3.id);
-		right = new FeedbackLinkedTalons(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute, Talon.RIGHT0.id, Talon.RIGHT1.id, Talon.RIGHT2.id, Talon.RIGHT3.id);
+		//left = new FeedbackLinkedTalons(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute, Talon.LEFT0.id, Talon.LEFT1.id, Talon.LEFT2.id, Talon.LEFT3.id);
+		//right = new FeedbackLinkedTalons(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute, Talon.RIGHT0.id, Talon.RIGHT1.id, Talon.RIGHT2.id, Talon.RIGHT3.id);
 		//setup current limiting
 		left.setCurrentLimit(currentLimit);
 		right.setCurrentLimit(currentLimit);
@@ -89,7 +88,7 @@ public class Pro775DriveBase extends DriveBase{
 	
 	public void driveFromTo(Waypoint from, Waypoint to) {
 		//generate path then drive it
-		Path path = new Path(from, to, 200, 0.5);
+		Path path = new Path(from, to, 10, 1, 1, Path.VelocityMode.TRIANGULAR);
 		Logging.h(path);
 		drivePath(path);
 		
